@@ -1,15 +1,20 @@
-import express from 'express';
+import "reflect-metadata"
+
 import dotenv from 'dotenv';
+import { AppModule } from './app.module';
+import { Factory } from "./core/framework";
 
 dotenv.config();
-
-const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
+async function bootstrap() {
+  try {
+    const app = Factory.create(AppModule);
+    await app.listen(PORT as number);
+    console.log(`Server is running on http://localhost:${PORT}`);
+  } catch (error) {
+    console.error('Error during server bootstrap:', error);
+  }
+}
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+bootstrap();
