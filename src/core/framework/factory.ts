@@ -1,16 +1,19 @@
 import express, { Express } from 'express';
-import { getControllerMetadata, getModuleMetadata, getRoutes, RouteMetadata } from '../decorators';
+import { getControllerMetadata, getModuleMetadata, getRoutes, PipeTransform, RouteMetadata } from '../decorators';
 import { container } from './container';
-import { joinPaths, wrapHandler } from '../utils';
+import { joinPaths, asyncHandler } from '../utils';
 import { Constructor } from '../types';
+import { createRequestHandler, PipesMiddleware, PreprocessingMiddleware } from '../middlewares';
 
 interface FactoryOptions {
   listen(port: number): Promise<void>;
   getHttpServer(): Express;
+  useGlobalPipes(...pipes: (Constructor<PipeTransform> | PipeTransform)[]): void;
 }
 
 export class Factory implements FactoryOptions {
   private readonly app: Express;
+  private globalPipes: (Constructor<PipeTransform> | PipeTransform)[] = [];
 
   constructor(private moduleClass: Constructor) {
     this.app = express();
@@ -58,7 +61,6 @@ export class Factory implements FactoryOptions {
 
   private registerControllers(controllers: InstanceType<Constructor>[]): void {
     for (const controllerClass of controllers) {
-
       if (!container.has(controllerClass)) {
         container.register(controllerClass, controllerClass);
       }
@@ -86,14 +88,27 @@ export class Factory implements FactoryOptions {
         continue;
       }
 
-      this.app[route.method](fullPath, wrapHandler(handler, controllerInstance));
+      this.app[route.method](
+        fullPath,
+        asyncHandler(PreprocessingMiddleware(controllerInstance, route.propertyKey)),
+        asyncHandler(PipesMiddleware(container, this.globalPipes)),
+        asyncHandler(createRequestHandler(handler, controllerInstance))
+      );
+
       console.log(`Mapped {${fullPath}, ${route.method.toUpperCase()}} route`);
     }
   }
 
-  async listen(port: number): Promise<void> {
+  useGlobalPipes(...pipes: (Constructor<PipeTransform> | PipeTransform)[]): void {
+    this.globalPipes.push(...pipes);
+  }
+
+  async listen(port: number, callback?: () => void): Promise<void> {
     return new Promise((resolve) => {
       this.app.listen(port, () => {
+        if (callback) {
+          callback();
+        }
         resolve();
       });
     });

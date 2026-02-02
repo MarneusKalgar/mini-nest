@@ -17,6 +17,8 @@ class Container implements ContainerInterface {
   private providers = new Map<Token, Provider>();
   private instances = new Map<Token, any>();
 
+  constructor() {}
+
   register<T>(token: Token<T>, useClass?: Constructor<T>): void {
     if (this.providers.has(token)) {
       throw new Error(`Token ${token.toString()} is already registered`);
@@ -77,3 +79,4 @@ class Container implements ContainerInterface {
 }
 
 export const container  = new Container();
+export type { Container };

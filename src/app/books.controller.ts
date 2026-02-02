@@ -1,12 +1,37 @@
-import { Controller, Get } from "../core/decorators";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UsePipes } from "../core/decorators";
 import { BooksService } from "./books.service";
+import { CreateBookDto, createBookSchema, GetUsersDto, getUsersSchema, UpdateBookDto, updateBookSchema } from "./dto";
+import { ValidationPipe, ParseIntPipe } from "./pipes";
 
 @Controller('/books')
 export class BooksController {
-  constructor(private svc: BooksService) {}
+  constructor(private service: BooksService) {}
 
   @Get('/')
-  list() {
-    return this.svc.findAll();
+  @UsePipes(new ValidationPipe(getUsersSchema))
+  list(@Query() query: GetUsersDto) {
+    return this.service.findAll(query);
+  }
+
+  @Get('/:id')
+  one(@Param('id', new ParseIntPipe()) id: number) {
+    return this.service.findOne(id);
+  }
+
+  @Post('/')
+  @UsePipes(new ValidationPipe(createBookSchema))
+  add(@Body() body: CreateBookDto) {
+    return this.service.create(body.title);
+  }
+
+  @Patch('/:id')
+  @UsePipes(new ValidationPipe(updateBookSchema))
+  update(@Param('id', new ParseIntPipe()) id: number, @Body() body: UpdateBookDto) {
+    return this.service.update(+id, body.title!);
+  }
+
+  @Delete('/:id')
+  delete(@Param('id') id: string) {
+    return this.service.delete(+id);
   }
 }
