@@ -1,4 +1,4 @@
-import { HttpStatusCodes } from "../constants";
+import { HttpStatusCodes } from "./httpStatusCodes";
 
 /**
  * Base error class for all custom application errors.

@@ -5,3 +5,4 @@ export * from './controller';
 export * from './route';
 export * from './param';
 export * from './pipe';
+export * from './filter';

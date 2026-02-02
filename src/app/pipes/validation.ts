@@ -1,6 +1,7 @@
 import { ZodType, ZodError } from 'zod';
 import { PipeTransform, ArgumentMetadata } from '../../core/decorators';
-import { extractZodErrors, ValidationError } from '../utils';
+import { extractZodErrors } from '../utils';
+import { ValidationError } from '../../core/common';
 
 type RequestFields = "body" | "params" | "query";
 

@@ -1,5 +1,5 @@
 import { PipeTransform, ArgumentMetadata } from '../../core/decorators';
-import { BadRequestError } from '../../app/utils';
+import { BadRequestError } from '../../core/common';
 
 export class ParseIntPipe implements PipeTransform<string, number> {
   transform(value: string, metadata?: ArgumentMetadata): number {

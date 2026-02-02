@@ -1,19 +1,21 @@
 import express, { Express } from 'express';
-import { getControllerMetadata, getModuleMetadata, getRoutes, PipeTransform, RouteMetadata } from '../decorators';
+import { ExceptionFilter, getControllerMetadata, getModuleMetadata, getRoutes, PipeTransform, RouteMetadata } from '../decorators';
 import { container } from './container';
 import { joinPaths, asyncHandler } from '../utils';
 import { Constructor } from '../types';
-import { createRequestHandler, PipesMiddleware, PreprocessingMiddleware } from '../middlewares';
+import { createRequestHandler, ExceptionFilterMiddleware, PipesMiddleware, PreprocessingMiddleware } from '../middlewares';
 
 interface FactoryOptions {
   listen(port: number): Promise<void>;
   getHttpServer(): Express;
   useGlobalPipes(...pipes: (Constructor<PipeTransform> | PipeTransform)[]): void;
+  useGlobalFilters(...filters: (Constructor<ExceptionFilter> | ExceptionFilter)[]): void;
 }
 
 export class Factory implements FactoryOptions {
   private readonly app: Express;
   private globalPipes: (Constructor<PipeTransform> | PipeTransform)[] = [];
+  private globalFilters: (Constructor<ExceptionFilter> | ExceptionFilter)[] = [];
 
   constructor(private moduleClass: Constructor) {
     this.app = express();
@@ -43,6 +45,8 @@ export class Factory implements FactoryOptions {
     if (metadata.controllers) {
       this.registerControllers(metadata.controllers);
     }
+
+    this.app.use(ExceptionFilterMiddleware(container, this.globalFilters));
   }
 
   private registerModules(module: Constructor): void {
@@ -101,6 +105,10 @@ export class Factory implements FactoryOptions {
 
   useGlobalPipes(...pipes: (Constructor<PipeTransform> | PipeTransform)[]): void {
     this.globalPipes.push(...pipes);
+  }
+
+  useGlobalFilters(...filters: (Constructor<ExceptionFilter> | ExceptionFilter)[]): void {
+    this.globalFilters.push(...filters);
   }
 
   async listen(port: number, callback?: () => void): Promise<void> {

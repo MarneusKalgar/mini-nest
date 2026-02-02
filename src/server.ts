@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { AppModule } from './app.module';
 import { Factory } from "./core/framework";
 import { LoggingPipe } from "./app/pipes";
+import { GlobalExceptionFilter } from "./core/filters";
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,8 @@ async function bootstrap() {
     const app = Factory.create(AppModule);
 
     app.useGlobalPipes(new LoggingPipe());
+
+    app.useGlobalFilters(new GlobalExceptionFilter());
 
     await app.listen(PORT as number, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
