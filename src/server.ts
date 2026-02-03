@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { Factory } from "./core/framework";
 import { LoggingPipe } from "./app/pipes";
 import { GlobalExceptionFilter } from "./core/filters";
+import { RolesGuard } from "./app/guards";
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,8 @@ async function bootstrap() {
     app.useGlobalPipes(new LoggingPipe());
 
     app.useGlobalFilters(new GlobalExceptionFilter());
+
+    app.useGlobalGuards(new RolesGuard());
 
     await app.listen(PORT as number, () => {
       console.log(`Server is running on http://localhost:${PORT}`);

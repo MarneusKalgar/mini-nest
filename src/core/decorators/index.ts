@@ -6,3 +6,5 @@ export * from './route';
 export * from './param';
 export * from './pipe';
 export * from './filter';
+export * from './guards';
+export * from './roles';

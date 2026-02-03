@@ -1,21 +1,23 @@
 import express, { Express } from 'express';
-import { ExceptionFilter, getControllerMetadata, getModuleMetadata, getRoutes, PipeTransform, RouteMetadata } from '../decorators';
+import { CanActivate, ExceptionFilter, getControllerMetadata, getModuleMetadata, getRoutes, PipeTransform, RouteMetadata } from '../decorators';
 import { container } from './container';
 import { joinPaths, asyncHandler } from '../utils';
 import { Constructor } from '../types';
-import { createRequestHandler, ExceptionFilterMiddleware, PipesMiddleware, PreprocessingMiddleware } from '../middlewares';
+import { createRequestHandler, ExceptionFilterMiddleware, GuardsMiddleware, PipesMiddleware, PreprocessingMiddleware } from '../middlewares';
 
 interface FactoryOptions {
   listen(port: number): Promise<void>;
   getHttpServer(): Express;
   useGlobalPipes(...pipes: (Constructor<PipeTransform> | PipeTransform)[]): void;
   useGlobalFilters(...filters: (Constructor<ExceptionFilter> | ExceptionFilter)[]): void;
+  useGlobalGuards(...guards: (Constructor<CanActivate> | CanActivate)[]): void;
 }
 
 export class Factory implements FactoryOptions {
   private readonly app: Express;
   private globalPipes: (Constructor<PipeTransform> | PipeTransform)[] = [];
   private globalFilters: (Constructor<ExceptionFilter> | ExceptionFilter)[] = [];
+  private globalGuards: (Constructor<CanActivate> | CanActivate)[] = [];
 
   constructor(private moduleClass: Constructor) {
     this.app = express();
@@ -95,6 +97,7 @@ export class Factory implements FactoryOptions {
       this.app[route.method](
         fullPath,
         asyncHandler(PreprocessingMiddleware(controllerInstance, route.propertyKey)),
+        asyncHandler(GuardsMiddleware(container, this.globalGuards)),
         asyncHandler(PipesMiddleware(container, this.globalPipes)),
         asyncHandler(createRequestHandler(handler, controllerInstance))
       );
@@ -109,6 +112,10 @@ export class Factory implements FactoryOptions {
 
   useGlobalFilters(...filters: (Constructor<ExceptionFilter> | ExceptionFilter)[]): void {
     this.globalFilters.push(...filters);
+  }
+
+  useGlobalGuards(...guards: (Constructor<CanActivate> | CanActivate)[]): void {
+    this.globalGuards.push(...guards);
   }
 
   async listen(port: number, callback?: () => void): Promise<void> {
