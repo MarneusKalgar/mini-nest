@@ -1,4 +1,5 @@
 import { Constructor } from '../types';
+import { ExecutionContext } from '../common';
 
 const PIPES_METADATA = Symbol('pipes:metadata');
 
@@ -10,6 +11,7 @@ export interface ArgumentMetadata {
   type: 'body' | 'query' | 'param' | 'headers';
   metatype?: Constructor;
   data?: string;
+  executionContext?: ExecutionContext;
 }
 
 export function UsePipes(...pipes: (Constructor<PipeTransform> | PipeTransform)[]): MethodDecorator {

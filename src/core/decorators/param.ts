@@ -22,25 +22,26 @@ export function Param(key?: string, pipe?: any): ParameterDecorator {
   };
 }
 
-export function Body(key?: string): ParameterDecorator {
+export function Body(pipe?: any): ParameterDecorator {
   return (target: Object, propertyKey: string | symbol | undefined, parameterIndex: number) => {
     const existingParams: ParamMetadata[] = Reflect.getMetadata(PARAM_METADATA, target, propertyKey!) || [];
     existingParams.push({
       index: parameterIndex,
       type: 'body',
-      key,
+      pipe,
     });
     Reflect.defineMetadata(PARAM_METADATA, existingParams, target, propertyKey!);
   };
 }
 
-export function Query(key?: string): ParameterDecorator {
+export function Query(key?: string, pipe?: any): ParameterDecorator {
   return (target: Object, propertyKey: string | symbol | undefined, parameterIndex: number) => {
     const existingParams: ParamMetadata[] = Reflect.getMetadata(PARAM_METADATA, target, propertyKey!) || [];
     existingParams.push({
       index: parameterIndex,
       type: 'query',
       key,
+      pipe,
     });
     Reflect.defineMetadata(PARAM_METADATA, existingParams, target, propertyKey!);
   };

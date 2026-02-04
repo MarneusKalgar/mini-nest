@@ -24,12 +24,26 @@ export function ExceptionFilterMiddleware(
         return next(error);
       }
 
+      const executionContext = req.context?.executionContext;
+
       for (const filter of allFilters) {
         const filterInstance = typeof filter === 'function'
           ? container.has(filter) ? container.resolve(filter) : new filter()
           : filter;
 
-        await filterInstance.catch(error, req, res);
+        // if (executionContext) {
+        await filterInstance.catch(error, executionContext!);
+        // } else {
+        //   // Fallback: create temporary execution context
+        //   const { ExpressExecutionContext } = await import('../common');
+        //   const tempContext = new ExpressExecutionContext(
+        //     Object.getPrototypeOf(req.context?.controllerInstance).constructor,
+        //     () => {},
+        //     req,
+        //     res
+        //   );
+        //   await filterInstance.catch(error, tempContext);
+        // }
         
         if (res.headersSent) {
           return;

@@ -97,8 +97,8 @@ export class Factory implements FactoryOptions {
       this.app[route.method](
         fullPath,
         asyncHandler(PreprocessingMiddleware(controllerInstance, route.propertyKey)),
-        asyncHandler(GuardsMiddleware(container, this.globalGuards)),
         asyncHandler(PipesMiddleware(container, this.globalPipes)),
+        asyncHandler(GuardsMiddleware(container, this.globalGuards)),
         asyncHandler(createRequestHandler(handler, controllerInstance))
       );
 

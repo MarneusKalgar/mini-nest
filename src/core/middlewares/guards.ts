@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { Container } from '../framework';
 import { CanActivate, getGuardsMetadata } from '../decorators';
 import { Constructor } from '../types';
-import { ForbiddenError, ExpressExecutionContext } from '../common';
+import { ForbiddenError } from '../common';
 
 export function GuardsMiddleware(
   container: Container,
@@ -14,24 +14,14 @@ export function GuardsMiddleware(
         throw new Error('Request context not found. PreprocessingMiddleware must run first.');
       }
 
-      const { controllerInstance, handlerName } = req.context;
+      const { controllerInstance, handlerName, executionContext } = req.context;
 
-      if (!controllerInstance || !handlerName) {
-        throw new Error('Controller instance or handler name not found in request context.');
+      if (!controllerInstance || !handlerName || !executionContext) {
+        throw new Error('Controller instance, handler name, or execution context not found in request context.');
       }
 
       const routeGuards = getGuardsMetadata(controllerInstance, handlerName);
       const allGuards = [...routeGuards, ...globalGuards];
-
-      // Create execution context
-      const targetClass = controllerInstance.constructor;
-      const targetHandler = controllerInstance[handlerName];
-      const executionContext = new ExpressExecutionContext(
-        targetClass,
-        targetHandler,
-        req,
-        res
-      );
 
       for (const guard of allGuards) {
         const guardInstance = typeof guard === 'function'

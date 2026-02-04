@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { Constructor } from '../types';
+import { ExecutionContext } from '../common';
 
 export interface ExceptionFilter<T = any> {
-  catch(exception: T, request: Request, response: Response): void | Promise<void>;
+  catch(exception: T, host: ExecutionContext): void | Promise<void>;
 }
 
 export interface ArgumentsHost {

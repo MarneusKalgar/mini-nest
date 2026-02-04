@@ -5,7 +5,7 @@ export const createBookSchema = z.object({
 });
 
 export const updateBookSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters').optional(),
+  title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
 });
 
 export const getUsersSchema = z.object({

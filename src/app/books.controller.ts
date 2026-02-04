@@ -27,14 +27,16 @@ export class BooksController {
 
   @Patch('/:id')
   @Roles('admin')
-  @UsePipes(new ValidationPipe(updateBookSchema))
-  update(@Param('id', new ParseIntPipe()) id: number, @Body() body: UpdateBookDto) {
-    return this.service.update(+id, body.title!);
+  update(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Body(new ValidationPipe(updateBookSchema)) body: UpdateBookDto
+  ) {
+    return this.service.update(id, body.title!);
   }
 
   @Delete('/:id')
   @Roles('admin')
-  delete(@Param('id') id: string) {
+  delete(@Param('id', new ParseIntPipe()) id: number) {
     return this.service.delete(+id);
   }
 }

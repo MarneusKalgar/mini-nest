@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { getParamMetadata, getPipesMetadata, extractParamValue } from '../decorators';
 import { Constructor } from '../types';
+import { ExpressExecutionContext, ExecutionContext } from '../common';
 
 export interface RequestContext {
   paramMetadata: ReturnType<typeof getParamMetadata>;
@@ -10,6 +11,7 @@ export interface RequestContext {
   transformedArgs?: any[];
   controllerInstance?: any;
   handlerName?: string | symbol;
+  executionContext?: ExecutionContext;
 }
 
 export function PreprocessingMiddleware(
@@ -24,6 +26,15 @@ export function PreprocessingMiddleware(
 
       const extractedArgs = sortedParams.map(metadata => extractParamValue(req, metadata));
 
+      const targetClass = controllerInstance.constructor;
+      const targetHandler = controllerInstance[handlerName];
+      const executionContext = new ExpressExecutionContext(
+        targetClass,
+        targetHandler,
+        req,
+        res
+      );
+
       req.context = {
         paramMetadata,
         sortedParams,
@@ -31,6 +42,7 @@ export function PreprocessingMiddleware(
         extractedArgs,
         controllerInstance,
         handlerName,
+        executionContext,
       };
 
       next();

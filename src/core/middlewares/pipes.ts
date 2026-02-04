@@ -13,9 +13,14 @@ export function PipesMiddleware(
         throw new Error('Request context not found. PreprocessingMiddleware must run first.');
       }
 
-      const { pipes: routePipes, extractedArgs, sortedParams, controllerInstance, handlerName } = req.context;
-
-      const allPipes = [...globalPipes, ...routePipes];
+      const { 
+        pipes: routePipes, 
+        extractedArgs, 
+        sortedParams, 
+        controllerInstance, 
+        handlerName,
+        executionContext
+      } = req.context;
 
       if (!controllerInstance || !handlerName) {
         throw new Error('Controller instance or handler name not found in request context.');
@@ -28,8 +33,8 @@ export function PipesMiddleware(
           const paramTypes = Reflect.getMetadata('design:paramtypes', controllerInstance, handlerName) || [];
           const paramMeta = sortedParams[index];
           const paramPipes = paramMeta.pipe ? [paramMeta.pipe] : [];
-          const pipesToApply = [...paramPipes, ...allPipes]
-          
+          const pipesToApply = [...globalPipes, ...routePipes, ...paramPipes];
+
           for (const pipe of pipesToApply) {
             const pipeInstance = typeof pipe === 'function' 
               ? container.has(pipe) ? container.resolve(pipe) : new pipe()
@@ -39,6 +44,7 @@ export function PipesMiddleware(
               type: sortedParams[index].type,
               data: sortedParams[index].key,
               metatype: paramTypes[index],
+              executionContext,
             });
           }
 
