@@ -14,10 +14,9 @@ async function bootstrap() {
   try {
     const app = Factory.create(AppModule);
 
+    // No real value, just demonstrating global pipe usage
     app.useGlobalPipes(new LoggingPipe());
-
     app.useGlobalFilters(new GlobalExceptionFilter());
-
     app.useGlobalGuards(new RolesGuard());
 
     await app.listen(PORT as number, () => {

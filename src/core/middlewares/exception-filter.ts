@@ -9,7 +9,7 @@ export function ExceptionFilterMiddleware(
 ): ErrorRequestHandler {
   return async (error: any, req: Request, res: Response, next: NextFunction) => {
     if (res.headersSent) {
-      return next(error);
+      return;
     }
 
     try {
@@ -19,11 +19,6 @@ export function ExceptionFilterMiddleware(
           : [];
 
       const allFilters = [...routeFilters, ...globalFilters];
-
-      if (!allFilters.length) {
-        return next(error);
-      }
-
       const executionContext = req.context?.executionContext;
 
       for (const filter of allFilters) {
@@ -31,29 +26,14 @@ export function ExceptionFilterMiddleware(
           ? container.has(filter) ? container.resolve(filter) : new filter()
           : filter;
 
-        // if (executionContext) {
         await filterInstance.catch(error, executionContext!);
-        // } else {
-        //   // Fallback: create temporary execution context
-        //   const { ExpressExecutionContext } = await import('../common');
-        //   const tempContext = new ExpressExecutionContext(
-        //     Object.getPrototypeOf(req.context?.controllerInstance).constructor,
-        //     () => {},
-        //     req,
-        //     res
-        //   );
-        //   await filterInstance.catch(error, tempContext);
-        // }
         
         if (res.headersSent) {
           return;
         }
       }
-
-      next(error);
     } catch (filterError) {
       console.error('Error in exception filter:', filterError);
-      next(filterError);
     }
   };
 }

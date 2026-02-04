@@ -1,6 +1,6 @@
 import { Injectable } from "../core/decorators";
 import { NotFoundError, CreatedError, UpdatedError, DeletedError } from "../core/common";
-import { GetUsersDto } from "./dto";
+import { GetBooksDto } from "./dto";
 
 export interface Book {
   id: number;
@@ -11,7 +11,7 @@ export interface Book {
 export class BooksService {
   private data: Book[] = [{ id: 1, title: '1984' }];
 
-  findAll(query: GetUsersDto) {
+  findAll(query: GetBooksDto) {
     return this.data;
   }
 
@@ -37,10 +37,10 @@ export class BooksService {
   }
 
   update(id: number, title: string) {
-    const book = this.findOne(id);
+    const book = this.data.find(b => b.id === id);
 
     if (!book) {
-      throw new NotFoundError(`Book with id ${id} not found`);
+      throw new UpdatedError(`Book with id ${id} not found`);
     }
 
     const existingBook = this.data.find(

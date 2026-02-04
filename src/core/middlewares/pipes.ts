@@ -3,6 +3,29 @@ import { Container } from '../framework';
 import { PipeTransform } from '../decorators';
 import { Constructor } from '../types';
 
+const pipeInstanceCache = new WeakMap<Constructor<PipeTransform> | PipeTransform, PipeTransform>();
+
+function getPipeInstance(
+  pipe: Constructor<PipeTransform> | PipeTransform,
+  container: Container
+): PipeTransform {
+
+  if (typeof pipe !== 'function') {
+    return pipe;
+  }
+
+  if (pipeInstanceCache.has(pipe)) {
+    return pipeInstanceCache.get(pipe)!;
+  }
+
+  const instance = container.has(pipe) 
+    ? container.resolve(pipe) 
+    : new pipe();
+  
+  pipeInstanceCache.set(pipe, instance);
+  return instance;
+}
+
 export function PipesMiddleware(
   container: Container,
   globalPipes: (Constructor<PipeTransform> | PipeTransform)[]
@@ -14,10 +37,10 @@ export function PipesMiddleware(
       }
 
       const { 
-        pipes: routePipes, 
-        extractedArgs, 
-        sortedParams, 
-        controllerInstance, 
+        pipes: routePipes,
+        extractedArgs,
+        sortedParams,
+        controllerInstance,
         handlerName,
         executionContext
       } = req.context;
@@ -36,10 +59,7 @@ export function PipesMiddleware(
           const pipesToApply = [...globalPipes, ...routePipes, ...paramPipes];
 
           for (const pipe of pipesToApply) {
-            const pipeInstance = typeof pipe === 'function' 
-              ? container.has(pipe) ? container.resolve(pipe) : new pipe()
-              : pipe;
-
+            const pipeInstance = getPipeInstance(pipe, container);
             transformedValue = await pipeInstance.transform(transformedValue, {
               type: sortedParams[index].type,
               data: sortedParams[index].key,
