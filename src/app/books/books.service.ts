@@ -1,5 +1,5 @@
-import { Injectable } from "../core/decorators";
-import { NotFoundError, CreatedError, UpdatedError, DeletedError } from "../core/common";
+import { Injectable } from "../../core/decorators";
+import { NotFoundError, CreatedError, UpdatedError, DeletedError } from "../../core/common";
 import { GetBooksDto } from "./dto";
 
 export interface Book {

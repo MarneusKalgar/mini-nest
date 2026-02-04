@@ -1,7 +1,7 @@
 import "reflect-metadata"
 
 import dotenv from 'dotenv';
-import { AppModule } from './app.module';
+import { AppModule } from './app/app.module';
 import { Factory } from "./core/framework";
 import { LoggingPipe } from "./app/pipes";
 import { GlobalExceptionFilter } from "./core/filters";

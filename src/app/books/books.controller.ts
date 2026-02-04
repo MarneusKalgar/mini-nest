@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Roles, UsePipes } from "../core/decorators";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Roles, UsePipes } from "../../core/decorators";
 import { BooksService } from "./books.service";
 import { CreateBookDto, createBookSchema, GetBooksDto, getBooksSchema, UpdateBookDto, updateBookSchema } from "./dto";
-import { ValidationPipe, ParseIntPipe } from "./pipes";
+import { ValidationPipe, ParseIntPipe } from "../pipes";
 
 @Controller('/books')
 export class BooksController {
