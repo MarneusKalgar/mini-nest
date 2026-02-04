@@ -1,6 +1,12 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { Constructor } from '../types';
 
+/**
+ * Creates a request handler that executes the controller method
+ * @param handler - The controller method to execute
+ * @param controllerInstance - The controller instance
+ * @returns Express request handler
+ */
 export function createRequestHandler(
   handler: Function,
   controllerInstance: InstanceType<Constructor>

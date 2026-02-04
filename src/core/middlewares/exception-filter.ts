@@ -3,6 +3,12 @@ import { Container } from '../framework';
 import { Constructor } from '../types';
 import { getFiltersMetadata, ExceptionFilter } from '../decorators';
 
+/**
+ * Creates middleware for handling exceptions with registered filters
+ * @param container - The DI container for resolving filter instances
+ * @param globalFilters - Global exception filters to apply to all routes
+ * @returns Express error request handler
+ */
 export function ExceptionFilterMiddleware(
   container: Container,
   globalFilters: (Constructor<ExceptionFilter> | ExceptionFilter)[]

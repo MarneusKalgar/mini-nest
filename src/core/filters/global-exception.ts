@@ -2,7 +2,16 @@ import { Request, Response } from 'express';
 import { ExceptionFilter } from '../decorators';
 import { HttpStatusCodes, BaseError, ExecutionContext } from '../common';
 
+/**
+ * Global exception filter that handles all unhandled exceptions
+ * Provides consistent error response formatting
+ */
 export class GlobalExceptionFilter implements ExceptionFilter {
+  /**
+   * Catches and processes exceptions, sending formatted error responses
+   * @param exception - The caught exception
+   * @param host - The execution context containing request/response
+   */
   catch(exception: any, host: ExecutionContext): void {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest();

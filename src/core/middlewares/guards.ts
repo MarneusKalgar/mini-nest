@@ -4,6 +4,12 @@ import { CanActivate, getGuardsMetadata } from '../decorators';
 import { Constructor } from '../types';
 import { ForbiddenError } from '../common';
 
+/**
+ * Creates middleware for executing guards to control route access
+ * @param container - The DI container for resolving guard instances
+ * @param globalGuards - Global guards to apply to all routes
+ * @returns Express request handler
+ */
 export function GuardsMiddleware(
   container: Container,
   globalGuards: (Constructor<CanActivate> | CanActivate)[]

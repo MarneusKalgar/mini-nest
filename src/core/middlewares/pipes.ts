@@ -3,8 +3,15 @@ import { Container } from '../framework';
 import { PipeTransform } from '../decorators';
 import { Constructor } from '../types';
 
+/** Cache for pipe instances to avoid repeated instantiation */
 const pipeInstanceCache = new WeakMap<Constructor<PipeTransform> | PipeTransform, PipeTransform>();
 
+/**
+ * Gets or creates a pipe instance
+ * @param pipe - Pipe class or instance
+ * @param container - The DI container
+ * @returns The pipe instance
+ */
 function getPipeInstance(
   pipe: Constructor<PipeTransform> | PipeTransform,
   container: Container
@@ -26,6 +33,12 @@ function getPipeInstance(
   return instance;
 }
 
+/**
+ * Creates middleware for executing pipes to transform and validate data
+ * @param container - The DI container for resolving pipe instances
+ * @param globalPipes - Global pipes to apply to all routes
+ * @returns Express request handler
+ */
 export function PipesMiddleware(
   container: Container,
   globalPipes: (Constructor<PipeTransform> | PipeTransform)[]
