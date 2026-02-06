@@ -27,7 +27,7 @@ export function GuardsMiddleware(
       }
 
       const routeGuards = getGuardsMetadata(controllerInstance, handlerName);
-      const allGuards = [...routeGuards, ...globalGuards];
+      const allGuards = [...globalGuards, ...routeGuards];
 
       for (const guard of allGuards) {
         const guardInstance = typeof guard === 'function'

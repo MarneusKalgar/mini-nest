@@ -7,6 +7,5 @@ export const joinPaths = (...paths: string[]): string => {
   return '/' + paths
     .filter(p => p)
     .map(p => p.replace(/^\/|\/$/g, ''))
-    .filter(p => p)
     .join('/');
 };

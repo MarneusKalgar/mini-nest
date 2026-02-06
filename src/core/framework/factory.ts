@@ -13,7 +13,7 @@ interface FactoryOptions {
    * Starts the HTTP server on the specified port
    * @param port - The port number to listen on
    */
-  listen(port: number): Promise<void>;
+  listen(port: number, callback?: () => void): Promise<void>;
   /**
    * Gets the underlying Express application instance
    * @returns The Express app

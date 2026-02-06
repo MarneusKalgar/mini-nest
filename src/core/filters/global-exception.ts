@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import { ExceptionFilter } from '../decorators';
 import { HttpStatusCodes, BaseError, ExecutionContext } from '../common';
 
@@ -16,6 +15,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest();
     const res = ctx.getResponse();
+
+    if (res.headersSent) {
+      return;
+    }
 
     let status = HttpStatusCodes.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';

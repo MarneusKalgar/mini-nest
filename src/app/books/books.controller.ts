@@ -31,12 +31,12 @@ export class BooksController {
     @Param('id', new ParseIntPipe()) id: number,
     @Body(new ValidationPipe(updateBookSchema)) body: UpdateBookDto
   ) {
-    return this.service.update(id, body.title!);
+    return this.service.update(id, body.title);
   }
 
   @Delete('/:id')
   @Roles('admin')
   delete(@Param('id', new ParseIntPipe()) id: number) {
-    return this.service.delete(+id);
+    return this.service.delete(id);
   }
 }

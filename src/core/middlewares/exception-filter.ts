@@ -24,22 +24,36 @@ export function ExceptionFilterMiddleware(
           ? getFiltersMetadata(req.context.controllerInstance, req.context.handlerName)
           : [];
 
-      const allFilters = [...routeFilters, ...globalFilters];
+      const allFilters = [...globalFilters, ...routeFilters];
       const executionContext = req.context?.executionContext;
+
+      if (!executionContext) {
+        console.error('Execution context not found:', error);
+        if (!res.headersSent) {
+          res.status(500).json({ 
+            message: 'Internal Server Error',
+            error: error.message 
+          });
+        }
+        return;
+      }
 
       for (const filter of allFilters) {
         const filterInstance = typeof filter === 'function'
           ? container.has(filter) ? container.resolve(filter) : new filter()
           : filter;
 
-        await filterInstance.catch(error, executionContext!);
-        
+        await filterInstance.catch(error, executionContext);
+
         if (res.headersSent) {
           return;
         }
       }
     } catch (filterError) {
       console.error('Error in exception filter:', filterError);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Internal Server Error' });
+      }
     }
   };
 }

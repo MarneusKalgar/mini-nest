@@ -10,6 +10,11 @@ import { RolesGuard } from "./app/guards";
 dotenv.config();
 const PORT = process.env.PORT || 3000;
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
 async function bootstrap() {
   try {
     const app = Factory.create(AppModule);
@@ -24,6 +29,7 @@ async function bootstrap() {
     });
   } catch (error) {
     console.error('Error during server bootstrap:', error);
+    process.exit(1);
   }
 }
 

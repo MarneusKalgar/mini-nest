@@ -42,20 +42,33 @@ export function Param(key?: string, pipe?: any): ParameterDecorator {
 
 /**
  * Parameter decorator to extract the request body
- * @param pipe - Optional pipe for data transformation/validation
+ * @param keyOrPipe - Optional key to extract a specific property, or a pipe for validation
+ * @param pipe - Optional pipe for data transformation/validation (when first arg is a key)
  * @returns A parameter decorator
  * @example
  * ```typescript
- * async createUser(@Body() dto: CreateUserDto) {}
+ * // Extract entire body with validation
+ * async createUser(@Body(new ValidationPipe(schema)) dto: CreateUserDto) {}
+ * 
+ * // Extract specific property
+ * async updateUser(@Body('name') name: string) {}
+ * 
+ * // Extract specific property with validation
+ * async updateUser(@Body('name', new ParseIntPipe()) name: number) {}
  * ```
  */
-export function Body(pipe?: any): ParameterDecorator {
+export function Body(keyOrPipe?: string | any, pipe?: any): ParameterDecorator {
   return (target: Object, propertyKey: string | symbol | undefined, parameterIndex: number) => {
     const existingParams: ParamMetadata[] = Reflect.getMetadata(PARAM_METADATA, target, propertyKey!) || [];
+
+    // Determine if first argument is a key (string) or a pipe (object)
+    const isKey = typeof keyOrPipe === 'string';
+
     existingParams.push({
       index: parameterIndex,
       type: 'body',
-      pipe,
+      key: isKey ? keyOrPipe : undefined,
+      pipe: isKey ? pipe : keyOrPipe,
     });
     Reflect.defineMetadata(PARAM_METADATA, existingParams, target, propertyKey!);
   };
