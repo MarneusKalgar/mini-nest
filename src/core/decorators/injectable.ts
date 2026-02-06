@@ -26,9 +26,7 @@ export function Injectable(options?: InjectableOptions): ClassDecorator {
   return (target: Function) => {
     Reflect.defineMetadata(INJECTABLE_METADATA, true, target);
     const token = options?.token || target as Constructor;
-    if (!container.has(token)) {
-      container.register(token, target as Constructor);
-    }
+    container.register(token, target as Constructor);
   };
 }
 

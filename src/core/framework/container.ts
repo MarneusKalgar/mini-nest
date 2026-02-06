@@ -61,14 +61,18 @@ class Container implements ContainerInterface {
    * @throws Error if the token is already registered
    */
   register<T>(token: Token<T>, useClass?: Constructor<T>): void {
-    if (this.providers.has(token)) {
-      throw new Error(`Token ${token.toString()} is already registered`);
-    }
-
-    this.providers.set(token, {
+    const provider: Provider<T> = {
       token,
       useClass: useClass || token as Constructor<T>,
-    });
+    };
+
+    if (this.providers.has(token)) {
+      this.providers.set(token, provider);
+      this.instances.delete(token);
+      return;
+    }
+
+    this.providers.set(token, provider);
   }
 
   /**
