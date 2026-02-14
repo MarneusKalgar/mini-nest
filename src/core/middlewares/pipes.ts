@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { Container } from '../framework';
-import { PipeTransform } from '../decorators';
+import { getControllerPipesMetadata, PipeTransform } from '../decorators';
 import { Constructor } from '../types';
 
 /** Cache for pipe instances to avoid repeated instantiation */
@@ -49,7 +49,7 @@ export function PipesMiddleware(
         throw new Error('Request context not found. PreprocessingMiddleware must run first.');
       }
 
-      const { 
+      const {
         pipes: routePipes,
         extractedArgs,
         sortedParams,
@@ -62,6 +62,8 @@ export function PipesMiddleware(
         throw new Error('Controller instance or handler name not found in request context.');
       }
 
+      const controllerPipes = getControllerPipesMetadata(controllerInstance);
+
       const transformedArgs = await Promise.all(
         extractedArgs.map(async (value, index) => {
           let transformedValue = value;
@@ -69,7 +71,7 @@ export function PipesMiddleware(
           const paramTypes = Reflect.getMetadata('design:paramtypes', controllerInstance, handlerName) || [];
           const paramMeta = sortedParams[index];
           const paramPipes = paramMeta.pipe ? [paramMeta.pipe] : [];
-          const pipesToApply = [...globalPipes, ...routePipes, ...paramPipes];
+          const pipesToApply = [...globalPipes, ...controllerPipes, ...routePipes, ...paramPipes];
 
           for (const pipe of pipesToApply) {
             const pipeInstance = getPipeInstance(pipe, container);
