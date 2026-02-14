@@ -1,5 +1,5 @@
 import express, { Express } from 'express';
-import { CanActivate, ExceptionFilter, getControllerMetadata, getModuleMetadata, getRoutes, PipeTransform, RouteMetadata } from '../decorators';
+import { CanActivate, ExceptionFilter, getControllerMetadata, getModuleMetadata, getRoutes, ModuleMetadata, PipeTransform, RouteMetadata } from '../decorators';
 import { container } from './container';
 import { joinPaths, asyncHandler } from '../utils';
 import { Constructor } from '../types';
@@ -87,7 +87,7 @@ export class Factory implements FactoryOptions {
       }
     }
 
-    this.registerModuleProviders(metadata);
+    this.registerProviders(metadata);
 
     if (metadata.controllers) {
       this.registerControllers(metadata.controllers);
@@ -112,33 +112,24 @@ export class Factory implements FactoryOptions {
       }
     }
 
-    this.registerModuleProviders(metadata);
+    //this.registerModuleProviders(metadata);
+
+    this.registerProviders(metadata);
 
     if (metadata.controllers) {
       this.registerControllers(metadata.controllers);
     }
   }
 
-    /**
-   * Registers providers from module metadata
-   * Prefers exports over providers if exports are defined
-   * @param metadata - The module metadata
-   */
-  private registerModuleProviders(metadata: ReturnType<typeof getModuleMetadata>): void {
-    const providersToRegister = metadata.exports && metadata.exports.length > 0
-      ? metadata.exports as Constructor[]
-      : metadata.providers || [];
-    
-    this.registerProviders(providersToRegister);
-  }
-
   /**
    * Registers providers in the DI container
    * @param providers - Array of provider classes to register
    */
-  private registerProviders(providers: Constructor[]): void {
+  private registerProviders(metadata: ModuleMetadata): void {
+    const providers = metadata.providers || [];
     for (const provider of providers) {
-      if (!container.has(provider)) {
+      if (container.has(provider)) continue;
+      if (this.isConstructor(provider)) {
         container.register(provider, provider);
       }
     }
@@ -193,6 +184,15 @@ export class Factory implements FactoryOptions {
 
       console.log(`Mapped {${fullPath}, ${route.method.toUpperCase()}} route`);
     }
+  }
+
+  /**
+   * Type guard to check if a value is a constructor function
+   * @param value - The value to check
+   * @returns True if the value is a constructor, false otherwise
+   */
+  private isConstructor(value: any): value is Constructor {
+    return typeof value === 'function' && value.prototype;
   }
 
   /**
