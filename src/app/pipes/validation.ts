@@ -1,4 +1,4 @@
-import { ZodType, ZodError } from 'zod';
+import { ZodType } from 'zod';
 import { PipeTransform, ArgumentMetadata } from '../../core/decorators';
 import { extractZodErrors } from '../utils';
 import { ValidationError } from '../../core/common';

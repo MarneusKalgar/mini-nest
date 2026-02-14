@@ -45,6 +45,7 @@ export class Factory implements FactoryOptions {
   private globalPipes: (Constructor<PipeTransform> | PipeTransform)[] = [];
   private globalFilters: (Constructor<ExceptionFilter> | ExceptionFilter)[] = [];
   private globalGuards: (Constructor<CanActivate> | CanActivate)[] = [];
+  private processedModules = new Set<Constructor>();
 
   /**
    * Creates a new factory instance
@@ -62,7 +63,7 @@ export class Factory implements FactoryOptions {
    */
   static create(moduleClass: Constructor): Factory {
     const factory = new Factory(moduleClass);
-    factory.initializeModule();
+    factory.initializeRootModule();
     return factory;
   }
 
@@ -77,7 +78,7 @@ export class Factory implements FactoryOptions {
   /**
    * Initializes the root module and registers all components
    */
-  private initializeModule(): void {
+  private initializeRootModule(): void {
     const metadata = getModuleMetadata(this.moduleClass);
 
     if (metadata.imports) {
@@ -85,6 +86,8 @@ export class Factory implements FactoryOptions {
         this.registerModules(importedModule);
       }
     }
+
+    this.registerModuleProviders(metadata);
 
     if (metadata.controllers) {
       this.registerControllers(metadata.controllers);
@@ -98,6 +101,9 @@ export class Factory implements FactoryOptions {
    * @param module - The module class to register
    */
   private registerModules(module: Constructor): void {
+    if (this.processedModules.has(module)) return;
+
+    this.processedModules.add(module);
     const metadata = getModuleMetadata(module);
 
     if (metadata.imports) {
@@ -106,8 +112,35 @@ export class Factory implements FactoryOptions {
       }
     }
 
+    this.registerModuleProviders(metadata);
+
     if (metadata.controllers) {
       this.registerControllers(metadata.controllers);
+    }
+  }
+
+    /**
+   * Registers providers from module metadata
+   * Prefers exports over providers if exports are defined
+   * @param metadata - The module metadata
+   */
+  private registerModuleProviders(metadata: ReturnType<typeof getModuleMetadata>): void {
+    const providersToRegister = metadata.exports && metadata.exports.length > 0
+      ? metadata.exports as Constructor[]
+      : metadata.providers || [];
+    
+    this.registerProviders(providersToRegister);
+  }
+
+  /**
+   * Registers providers in the DI container
+   * @param providers - Array of provider classes to register
+   */
+  private registerProviders(providers: Constructor[]): void {
+    for (const provider of providers) {
+      if (!container.has(provider)) {
+        container.register(provider, provider);
+      }
     }
   }
 
@@ -153,8 +186,8 @@ export class Factory implements FactoryOptions {
       this.app[route.method](
         fullPath,
         asyncHandler(PreprocessingMiddleware(controllerInstance, route.propertyKey)),
-        asyncHandler(GuardsMiddleware(container, this.globalGuards)),
         asyncHandler(PipesMiddleware(container, this.globalPipes)),
+        asyncHandler(GuardsMiddleware(container, this.globalGuards)),
         asyncHandler(createRequestHandler(handler, controllerInstance))
       );
 

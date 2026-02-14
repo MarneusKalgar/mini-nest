@@ -1,13 +1,13 @@
 import "reflect-metadata"
 
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 import { AppModule } from './app/app.module';
 import { Factory } from "./core/framework";
 import { LoggingPipe } from "./app/pipes";
 import { GlobalExceptionFilter } from "./core/filters";
 import { RolesGuard } from "./app/guards";
 
-dotenv.config();
+config();
 const PORT = process.env.PORT || 3000;
 
 process.on('uncaughtException', (err) => {

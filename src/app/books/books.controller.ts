@@ -1,14 +1,15 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Roles, UsePipes } from "../../core/decorators";
 import { BooksService } from "./books.service";
 import { CreateBookDto, createBookSchema, GetBooksDto, getBooksSchema, UpdateBookDto, updateBookSchema } from "./dto";
-import { ValidationPipe, ParseIntPipe } from "../pipes";
+import { ValidationPipe, ParseIntPipe, LoggingPipe } from "../pipes";
 
 @Controller('/books')
+@UsePipes.Class(new LoggingPipe('/books'))
 export class BooksController {
   constructor(private service: BooksService) {}
 
   @Get('/')
-  @UsePipes(new ValidationPipe(getBooksSchema))
+  @UsePipes.Method(new ValidationPipe(getBooksSchema))
   list(@Query() query: GetBooksDto) {
     return this.service.findAll(query);
   }
@@ -20,7 +21,7 @@ export class BooksController {
 
   @Post('/')
   @Roles('admin')
-  @UsePipes(new ValidationPipe(createBookSchema))
+  @UsePipes.Method(new ValidationPipe(createBookSchema))
   add(@Body() body: CreateBookDto) {
     return this.service.create(body.title);
   }
